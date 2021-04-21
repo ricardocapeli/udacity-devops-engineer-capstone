@@ -127,3 +127,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+capstone.pem
+new_user_credentials.csv
+udacity-devopsengineer-capstone-master
+.DS_Store
+
+.kube/
