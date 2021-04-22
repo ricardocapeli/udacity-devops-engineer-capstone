@@ -5,19 +5,18 @@ jobs:
   build-backend:
     docker:
       - image: python:3.7.3-stretch
-    working_directory: ./project/project    
+    working_directory: ./project    
     steps:
       - checkout
       - run:
           name: install dependencies
           command: |
-            #cd ./project
+            cd ./project
             pwd
             ls
-            ls -ll
             python3 -m venv venv
             . venv/bin/activate
-            # make install
+            make install
             # Install hadolint
             wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64 &&\
             chmod +x /bin/hadolint
