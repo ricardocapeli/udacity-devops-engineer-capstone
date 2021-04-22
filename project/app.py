@@ -1,14 +1,13 @@
-#Using More Routes
 from flask import Flask
 app = Flask(__name__)
 
-@app.route("/")
-def hello():
-  return "Hello World!"
+@app.route('/')
+def hello_world():
+    return 'Flask: Hello World from Docker'
 
-@app.route("/John")
-def John():
-  return "Hello John!"
+@app.route('/api')
+def rest_hello_world():
+    return '{"id":1,"message":"Hello Wolrd Teste"}'
 
-if __name__ == "__main__":
-  app.run(debug=True)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=80, debug=True)

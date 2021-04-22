@@ -21,7 +21,7 @@ spec:
         app: capstone-app
     spec:
       containers:
-      - image: ricardofcapeli/mlmicroservice:latest
+      - image: ricardofcapeli/capstone:latest
         imagePullPolicy: Always
         name: capstone-app
         ports:
