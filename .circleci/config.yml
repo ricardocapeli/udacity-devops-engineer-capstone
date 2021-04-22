@@ -5,7 +5,7 @@ jobs:
   build-backend:
     docker:
       - image: python:3.7.3-stretch
-    working_directory: ./project      
+    working_directory: ./project/project    
     steps:
       - checkout
       - run:
@@ -22,7 +22,7 @@ jobs:
             wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64 &&\
             chmod +x /bin/hadolint
       - save_cache:
-          paths: [backend/.project]
+          paths: [backend/project]
           key: backend-build
 
   # test-backend:
