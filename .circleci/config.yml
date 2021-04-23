@@ -47,35 +47,16 @@ jobs:
     steps:
       - checkout # Checkout code from git
       - setup_remote_docker
-      - run:
-          name: Install dependencies
-          command: |
-            cd ./project
-            pwd
-            ls
-            python3 -m venv venv
-            . venv/bin/activate
-            make install
       - restore_cache:
           keys: [backend-build]            
       - run:
-          name: Build Docker image
+          name: Build and push Docker image
           command: |
             cd project
             ls 
             docker build -t ricardofcapeli/capstone:latest .
-  publish-latest:
-    environment:
-      IMAGE_NAME: capstone
-    docker:
-      - image: circleci/buildpack-deps:stretch
-    steps:
-      - setup_remote_docker
-      - run:
-          name: Publish Docker Image to Docker Hub
-          command: |
-            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            docker push $IMAGE_NAME:latest          
+            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+            docker push ricardofcapeli/capstone:latest        
 
 
 workflows:
@@ -85,6 +66,4 @@ workflows:
       - test-backend:
           requires: [build-backend]
       - docker-tag:
-          requires: [test-backend]
-      - publish-latest:
-          requires: [docker-tag]             
+          requires: [test-backend]             
