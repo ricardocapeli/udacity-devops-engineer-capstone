@@ -60,7 +60,7 @@ jobs:
           keys: [backend-build]            
       - run:
           name: Build Docker image
-          command: docker build -t ricardofcapeli/capstone:latest
+          command: docker build -t ricardofcapeli/capstone:latest .
   publish-latest:
     environment:
       IMAGE_NAME: capstone
