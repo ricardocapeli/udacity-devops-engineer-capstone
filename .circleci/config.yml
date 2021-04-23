@@ -61,9 +61,9 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-          cd project
-          ls 
-          docker build -t ricardofcapeli/capstone:latest .
+            cd project
+            ls 
+            docker build -t ricardofcapeli/capstone:latest .
   publish-latest:
     environment:
       IMAGE_NAME: capstone
