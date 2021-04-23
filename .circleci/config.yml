@@ -55,7 +55,7 @@ jobs:
             cd project
             ls 
             docker build -t ricardofcapeli/capstone:latest .
-            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+            echo $DOCKER_PASS | docker login -u $DOCKERHUB_USERNAME --password-stdin
             docker push ricardofcapeli/capstone:latest        
 
 
