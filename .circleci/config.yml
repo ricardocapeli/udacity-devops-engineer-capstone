@@ -38,6 +38,7 @@ jobs:
           command: |
             pwd
             ls
+            python3 -m venv venv
             . venv/bin/activate
             make lint          
 
