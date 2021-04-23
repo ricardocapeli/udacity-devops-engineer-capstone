@@ -39,7 +39,41 @@ jobs:
             # Install hadolint
             wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64 &&\
             chmod +x /bin/hadolint
-            make lint        
+            make lint
+
+  docker-tag:
+    docker:
+      - image: circleci/python:3.7.3-stretch
+    steps:
+      - checkout # Checkout code from git
+      - setup_remote_docker
+      - run:
+          name: Install dependencies
+          command: |
+            cd ./project
+            pwd
+            ls
+            python3 -m venv venv
+            . venv/bin/activate
+            make install
+      - restore_cache:
+          keys: [backend-build]            
+      - run:
+          name: Build Docker image
+          command: docker build -t ricardofcapeli/capstone:latest
+  publish-latest:
+    environment:
+      IMAGE_NAME: capstone
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - setup_remote_docker
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            docker push $IMAGE_NAME:latest          
+
 
 workflows:
   default:
@@ -47,3 +81,7 @@ workflows:
       - build-backend
       - test-backend:
           requires: [build-backend]
+      - docker-tag:
+          requires: [test-backend]
+      - publish-latest:
+          requires: [docker-tag]             
