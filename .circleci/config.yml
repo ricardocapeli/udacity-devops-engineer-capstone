@@ -24,24 +24,24 @@ jobs:
           paths: [backend/project]
           key: backend-build
 
-  # test-backend:
-  #   docker:
-  #     - image: python:3.7.3-stretch
-  #   steps:
-  #     - checkout # Checkout code from git
-  #     # Restore from cache
-  #     - restore_cache:
-  #         keys: [backend-build]
-  #     - run:
-  #         name: test-backend
-  #         working_directory: ./project
-  #         command: |
-  #           . venv/bin/activate
-  #           make lint          
+  test-backend:
+    docker:
+      - image: python:3.7.3-stretch
+    steps:
+      - checkout # Checkout code from git
+      # Restore from cache
+      - restore_cache:
+          keys: [backend-build]
+      - run:
+          name: test-backend
+          working_directory: ./project
+          command: |
+            . venv/bin/activate
+            make lint          
 
 workflows:
   default:
     jobs:
       - build-backend
-      # - test-frontend:
-      #     requires: [build-frontend]
+      - test-backend:
+          requires: [build-backend]
