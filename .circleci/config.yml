@@ -36,6 +36,8 @@ jobs:
           name: test-backend
           working_directory: ./project
           command: |
+            pwd
+            ls
             . venv/bin/activate
             make lint          
 
