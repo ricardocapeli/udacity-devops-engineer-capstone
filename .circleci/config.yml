@@ -132,8 +132,6 @@ workflows:
           requires: [build-backend]
       - docker-tag-push:
           requires: [test-backend]
-      - deploy-k8s-aws: 
-          requires: [docker-tag-push]
       - deploy-infrastructure:
           filters:
             branches:
