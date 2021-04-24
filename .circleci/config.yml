@@ -240,7 +240,7 @@ workflows:
       - configure-cluster:
           requires:
             - configure-infrastructure
-            - upload-docker
+            - docker-tag-push
       - deploy-docker:
           requires:
             - configure-cluster                                         
