@@ -234,12 +234,12 @@ workflows:
       #     filters:
       #       branches:
       #         only: [ main ]
-      # - configure-infrastructure:
+      - configure-infrastructure
       #     requires:
       #       - deploy-infrastructure
-      - configure-cluster
-          # requires:
-          #   - configure-infrastructure
+      - configure-cluster:
+          requires:
+            - configure-infrastructure
           #   - docker-tag-push
       - deploy-docker:
           requires:
