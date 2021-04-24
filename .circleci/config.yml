@@ -100,11 +100,11 @@ jobs:
           name: Ensure management instances exists
           command: |
             aws cloudformation deploy \
-              --template-file cloudformation/management.yml \
+              --template-file infrastructure/management.yml \
               --tags project=${ENVIRONMENT_NAME}-project \
               --stack-name "${ENVIRONMENT_NAME}-eks-management" \
               --region ${AWS_DEFAULT_REGION} \
-              --parameter-overrides file://cloudformation/management-parameters.json \
+              --parameter-overrides file://infrastructure/management-parameters.json \
               --output text >> ~/checkIfDeployed.txt
             cat ~/checkIfDeployed.txt
       - run:
