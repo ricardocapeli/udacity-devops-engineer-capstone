@@ -100,11 +100,11 @@ jobs:
           name: Ensure management instances exists
           command: |
             aws cloudformation deploy \
-              --template-file infra/infrastructure/management.yml \
+              --template-file cloudformation/management.yml \
               --tags project=${ENVIRONMENT_NAME}-project \
               --stack-name "${ENVIRONMENT_NAME}-eks-management" \
               --region ${AWS_DEFAULT_REGION} \
-              --parameter-overrides file://infra/infrastructure//management-parameters.json \
+              --parameter-overrides file://cloudformation/management-parameters.json \
               --output text >> ~/checkIfDeployed.txt
             cat ~/checkIfDeployed.txt
       - run:
@@ -116,7 +116,7 @@ jobs:
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filters "Name=tag:Name,Values=${ENVIRONMENT_NAME}-management*" \
               --output text >> ~/inventory.txt
-            #cat ~/inventory.txt
+            cat ~/inventory.txt
       - persist_to_workspace:
           root: ~/
           paths:
@@ -146,7 +146,7 @@ jobs:
                 echo "Our management instances are already configured."
               else
                 cat ~/inventory.txt
-                cd infra/ansible
+                cd ansible
                 ansible-playbook -i ~/inventory.txt configure-server.yml
               fi
   configure-cluster:
@@ -172,7 +172,7 @@ jobs:
                 echo "Our management instances are already configured."
               else
                 cat ~/inventory.txt
-                cd infra/ansible
+                cd ansible
                 ansible-playbook -i ~/inventory.txt configure-cluster.yml
               fi
       - run:
@@ -191,9 +191,9 @@ jobs:
           name: Display the LoadBalancer's DNS name
           command: |
             cat ~/inventory.txt
-            cd ~/project/infra/ansible
+            cd ansible
             ansible-playbook -i ~/inventory.txt save-elb-dns.yml
-            cat ~/project/infra/ansible/elb_dns.txt
+            cat ~/elb_dns.txt
       - persist_to_workspace:
           root: ~/
           paths:
