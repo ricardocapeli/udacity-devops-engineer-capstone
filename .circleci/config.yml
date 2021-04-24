@@ -193,7 +193,7 @@ jobs:
             cat ~/inventory.txt
             cd ~/project/infra/ansible
             ansible-playbook -i ~/inventory.txt save-elb-dns.yml
-            #cat ~/elb_dns.txt
+            cat ~/project/infra/ansible/elb_dns.txt
       - persist_to_workspace:
           root: ~/
           paths:
@@ -217,7 +217,7 @@ jobs:
           name: Deploy newest Docker Image
           command: |
             cat ~/inventory.txt
-            cd infra/ansible
+            cd ~/project/infra/ansible
             ansible-playbook -i ~/inventory.txt deploy-app.yml
           no_output_timeout: 2m            
 
