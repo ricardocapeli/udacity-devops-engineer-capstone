@@ -58,7 +58,7 @@ jobs:
             echo $DOCKER_PASS | docker login -u $DOCKERHUB_USERNAME --password-stdin
             docker push ricardofcapeli/capstone:latest
 
-deploy-infrastructure:
+  deploy-infrastructure:
     docker:
       - image: amazon/aws-cli
     steps:
