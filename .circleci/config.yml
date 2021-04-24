@@ -63,29 +63,29 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: yum install -y tar gzip
-      - run:
-          name: Ensure EKS network exists
-          command: |
-            aws cloudformation deploy \
-              --template-file infra/infrastructure/network.yml \
-              --tags project=${ENVIRONMENT_NAME}-project \
-              --stack-name "${ENVIRONMENT_NAME}-eks-network" \
-              --region ${AWS_DEFAULT_REGION} \
-              --parameter-overrides file://infra/infrastructure/network-parameters.json
-      - run:
-          name: Ensure EKS Cluster exists
-          command: |
-            aws cloudformation deploy \
-              --template-file infra/infrastructure/cluster.yml \
-              --tags project=${ENVIRONMENT_NAME}-project \
-              --stack-name "${ENVIRONMENT_NAME}-eks-cluster" \
-              --region ${AWS_DEFAULT_REGION} \
-              --parameter-overrides file://infra/infrastructure/cluster-parameters.json \
-              --capabilities CAPABILITY_NAMED_IAM
-          no_output_timeout: 15m
+      # - run:
+      #     name: Install dependencies
+      #     command: yum install -y tar gzip
+      # - run:
+      #     name: Ensure EKS network exists
+      #     command: |
+      #       aws cloudformation deploy \
+      #         --template-file infra/infrastructure/network.yml \
+      #         --tags project=${ENVIRONMENT_NAME}-project \
+      #         --stack-name "${ENVIRONMENT_NAME}-eks-network" \
+      #         --region ${AWS_DEFAULT_REGION} \
+      #         --parameter-overrides file://infra/infrastructure/network-parameters.json
+      # - run:
+      #     name: Ensure EKS Cluster exists
+      #     command: |
+      #       aws cloudformation deploy \
+      #         --template-file infra/infrastructure/cluster.yml \
+      #         --tags project=${ENVIRONMENT_NAME}-project \
+      #         --stack-name "${ENVIRONMENT_NAME}-eks-cluster" \
+      #         --region ${AWS_DEFAULT_REGION} \
+      #         --parameter-overrides file://infra/infrastructure/cluster-parameters.json \
+      #         --capabilities CAPABILITY_NAMED_IAM
+      #     no_output_timeout: 15m
       - run:
           name: Ensure Nodegroup exists
           command: |
@@ -122,6 +122,104 @@ jobs:
           paths:
             - inventory.txt
             - checkIfDeployed.txt
+
+  configure-infrastructure:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "d4:2f:91:66:b5:0d:84:24:4a:09:2c:d6:8a:c1:0f:91"
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update ansible
+      - run:
+          name: Configure server
+          command: |
+            if grep -q "No changes to deploy" ~/checkIfDeployed.txt
+              then
+                cat ~/inventory.txt
+                echo "Our management instances are already configured."
+              else
+                cat ~/inventory.txt
+                cd ansible
+                ansible-playbook -i ~/inventory.txt configure-server.yml
+              fi
+  configure-cluster:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "d4:2f:91:66:b5:0d:84:24:4a:09:2c:d6:8a:c1:0f:91"
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update ansible
+      - run:
+          name: Configure server
+          command: |
+            if grep -q "No changes to deploy" ~/checkIfDeployed.txt
+              then
+                cat ~/inventory.txt
+                echo "Our management instances are already configured."
+              else
+                cat ~/inventory.txt
+                cd ansible
+                ansible-playbook -i ~/inventory.txt configure-cluster.yml
+              fi
+      - run:
+          name: Wait for LoadBalancer's domain to become reachable
+          command: |
+            if grep -q "No changes to deploy" ~/checkIfDeployed.txt
+              then
+                cat ~/inventory.txt
+                echo "Our management instances are already configured."
+              else
+                cat ~/inventory.txt
+                echo "Wait 60 seconds..."
+                sleep 60
+              fi
+      - run:
+          name: Display the LoadBalancer's DNS name
+          command: |
+            cat ~/inventory.txt
+            cd ansible
+            ansible-playbook -i ~/inventory.txt save-elb-dns.yml
+            cat ~/elb_dns.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - elb_dns.txt
+
+  deploy-docker:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "d4:2f:91:66:b5:0d:84:24:4a:09:2c:d6:8a:c1:0f:91"
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update ansible
+      - run:
+          name: Deploy newest Docker Image
+          command: |
+            cat ~/inventory.txt
+            cd ansible
+            ansible-playbook -i ~/inventory.txt deploy-app.yml
+          no_output_timeout: 2m            
 
 
 workflows:
