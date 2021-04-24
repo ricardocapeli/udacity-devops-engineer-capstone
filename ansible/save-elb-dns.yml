@@ -1,4 +1,5 @@
 ---
+
 - name: "Save LoadBalancer's DNS name locally"
   hosts: management[0]
   user: ubuntu
