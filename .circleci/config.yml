@@ -192,7 +192,7 @@ jobs:
           command: |
             cat ~/inventory.txt
             cd infra/ansible
-            ansible-playbook -i ~/inventory.txt save-elb-dns.yml
+            ansible-playbook -i ~/inventory.txt project/infra/ansible/save-elb-dns.yml
             #cat ~/elb_dns.txt
       - persist_to_workspace:
           root: ~/
@@ -225,22 +225,22 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-backend
-      - test-backend:
-          requires: [build-backend]
-      - docker-tag-push:
-          requires: [test-backend]
-      - deploy-infrastructure:
-          filters:
-            branches:
-              only: [ main ]
-      - configure-infrastructure:
-          requires:
-            - deploy-infrastructure
+      # - build-backend
+      # - test-backend:
+      #     requires: [build-backend]
+      # - docker-tag-push:
+      #     requires: [test-backend]
+      # - deploy-infrastructure:
+      #     filters:
+      #       branches:
+      #         only: [ main ]
+      # - configure-infrastructure:
+      #     requires:
+      #       - deploy-infrastructure
       - configure-cluster:
-          requires:
-            - configure-infrastructure
-            - docker-tag-push
+          # requires:
+          #   - configure-infrastructure
+          #   - docker-tag-push
       - deploy-docker:
           requires:
             - configure-cluster                                         
