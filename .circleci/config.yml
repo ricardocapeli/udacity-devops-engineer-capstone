@@ -191,7 +191,7 @@ jobs:
           name: Display the LoadBalancer's DNS name
           command: |
             cat ~/inventory.txt
-            cd project/infra/ansible
+            cd ~/project/infra/ansible
             ansible-playbook -i ~/inventory.txt save-elb-dns.yml
             #cat ~/elb_dns.txt
       - persist_to_workspace:
