@@ -237,7 +237,7 @@ workflows:
       # - configure-infrastructure:
       #     requires:
       #       - deploy-infrastructure
-      - configure-cluster:
+      - configure-cluster
           # requires:
           #   - configure-infrastructure
           #   - docker-tag-push
