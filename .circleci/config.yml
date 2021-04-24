@@ -41,7 +41,7 @@ jobs:
             chmod +x /bin/hadolint
             make lint
 
-  docker-tag:
+  docker-tag-push:
     docker:
       - image: circleci/python:3.7.3-stretch
     steps:
@@ -56,7 +56,72 @@ jobs:
             ls 
             docker build -t ricardofcapeli/capstone:latest .
             echo $DOCKER_PASS | docker login -u $DOCKERHUB_USERNAME --password-stdin
-            docker push ricardofcapeli/capstone:latest        
+            docker push ricardofcapeli/capstone:latest
+
+deploy-infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: yum install -y tar gzip
+      - run:
+          name: Ensure EKS network exists
+          command: |
+            aws cloudformation deploy \
+              --template-file infra/infrastructure/network.yml \
+              --tags project=${ENVIRONMENT_NAME}-project \
+              --stack-name "${ENVIRONMENT_NAME}-eks-network" \
+              --region ${AWS_DEFAULT_REGION} \
+              --parameter-overrides file://infra/infrastructure/network-parameters.json
+      - run:
+          name: Ensure EKS Cluster exists
+          command: |
+            aws cloudformation deploy \
+              --template-file infra/infrastructure/cluster.yml \
+              --tags project=${ENVIRONMENT_NAME}-project \
+              --stack-name "${ENVIRONMENT_NAME}-eks-cluster" \
+              --region ${AWS_DEFAULT_REGION} \
+              --parameter-overrides file://infra/infrastructure/cluster-parameters.json \
+              --capabilities CAPABILITY_NAMED_IAM
+          no_output_timeout: 15m
+      - run:
+          name: Ensure Nodegroup exists
+          command: |
+            aws cloudformation deploy \
+              --template-file infra/infrastructure/nodegroup.yml \
+              --tags project=${ENVIRONMENT_NAME}-project \
+              --stack-name "${ENVIRONMENT_NAME}-eks-nodegroup" \
+              --region ${AWS_DEFAULT_REGION} \
+              --parameter-overrides file://infra/infrastructure/nodegroup-parameters.json \
+              --capabilities CAPABILITY_NAMED_IAM
+      - run:
+          name: Ensure management instances exists
+          command: |
+            aws cloudformation deploy \
+              --template-file infra/infrastructure/management.yml \
+              --tags project=${ENVIRONMENT_NAME}-project \
+              --stack-name "${ENVIRONMENT_NAME}-eks-management" \
+              --region ${AWS_DEFAULT_REGION} \
+              --parameter-overrides file://infra/infrastructure//management-parameters.json \
+              --output text >> ~/checkIfDeployed.txt
+            cat ~/checkIfDeployed.txt
+      - run:
+          name: Extract the IPs of the management instances for Ansible
+          command: |
+            echo [management] > ~/inventory.txt
+            aws ec2 describe-instances \
+              --region "${AWS_DEFAULT_REGION}" \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:Name,Values=${ENVIRONMENT_NAME}-management*" \
+              --output text >> ~/inventory.txt
+            cat ~/inventory.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - inventory.txt
+            - checkIfDeployed.txt
 
 
 workflows:
@@ -65,5 +130,11 @@ workflows:
       - build-backend
       - test-backend:
           requires: [build-backend]
-      - docker-tag:
-          requires: [test-backend]             
+      - docker-tag-push:
+          requires: [test-backend]
+      - deploy-k8s-aws: 
+          requires: [docker-tag-push]
+      - deploy-infrastructure:
+          filters:
+            branches:
+              only: [ main ]                           
