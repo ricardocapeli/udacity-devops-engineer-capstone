@@ -11,7 +11,7 @@ Parameters:
     Type: String
   amiImageId:
     Description: Defines the Image-ID of the OS to deploy
-    Default: ami-0518bb0e75d3619ca
+    Default: ami-0ca5c3bd5a268e7db
     Type: String
 
 Resources:
@@ -33,7 +33,7 @@ Resources:
       SecurityGroups:
         - Ref: InstanceSecurityGroup
       KeyName: capstone
-      ImageId: ami-0518bb0e75d3619ca
+      ImageId: ami-0ca5c3bd5a268e7db
       Tags:
         - Key: Name
           Value: !Sub ${EnvironmentName}-management1
