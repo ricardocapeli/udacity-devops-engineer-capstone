@@ -233,10 +233,10 @@ workflows:
           requires: [build-backend]
       - docker-tag-push:
           requires: [test-backend]
-      - deploy-infrastructure:
-          filters:
-            branches:
-              only: [ main ]
+      # - deploy-infrastructure:
+      #     filters:
+      #       branches:
+      #         only: [ main ]
       # - configure-infrastructure:
       #     requires:
       #       - deploy-infrastructure
@@ -244,6 +244,6 @@ workflows:
       #     requires:
       #       - configure-infrastructure
       #       - docker-tag-push
-      - deploy-docker:
+      - deploy-docker
           # requires:
           #   - configure-cluster                                         
