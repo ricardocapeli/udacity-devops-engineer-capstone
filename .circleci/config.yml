@@ -220,7 +220,7 @@ jobs:
           name: Deploy newest Docker Image
           command: |
             cat ~/inventory.txt
-            cd ~/project/infra/ansible
+            cd ansible
             ansible-playbook -i ~/inventory.txt deploy-app.yml
           no_output_timeout: 2m            
 
@@ -237,13 +237,13 @@ workflows:
           filters:
             branches:
               only: [ main ]
-      - configure-infrastructure:
-          requires:
-            - deploy-infrastructure
-      - configure-cluster:
-          requires:
-            - configure-infrastructure
-            - docker-tag-push
+      # - configure-infrastructure:
+      #     requires:
+      #       - deploy-infrastructure
+      # - configure-cluster:
+      #     requires:
+      #       - configure-infrastructure
+      #       - docker-tag-push
       - deploy-docker:
-          requires:
-            - configure-cluster                                         
+          # requires:
+          #   - configure-cluster                                         
