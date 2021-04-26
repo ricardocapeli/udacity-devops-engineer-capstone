@@ -65,6 +65,8 @@ Step 5: Test your pipeline
 
 #### Force error lint and handolint:
 
+![screenshots](./screenshots/error_lint.png)
+
 #### CI/CD - passes:
 
 #### Application
