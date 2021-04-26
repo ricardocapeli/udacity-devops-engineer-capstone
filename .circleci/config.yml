@@ -58,60 +58,59 @@ jobs:
             echo $DOCKER_PASS | docker login -u $DOCKERHUB_USERNAME --password-stdin
             docker push ricardofcapeli/capstone:latest
 
-  deploy-infrastructure:
+  deploy-infras:
     docker:
       - image: amazon/aws-cli
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints:
-            - "df:24:75:ba:ec:b5:a9:a4:40:45:5a:f8:5c:d3:48:e8"      
+          fingerprints: ["df:24:75:ba:ec:b5:a9:a4:40:45:5a:f8:5c:d3:48:e8"]    
       - run:
           name: Install dependencies
           command: yum install -y tar gzip
-      # - run:
-      #     name: Ensure EKS network exists
-      #     command: |
-      #       aws cloudformation deploy \
-      #         --template-file infra/infrastructure/network.yml \
-      #         --tags project=${ENVIRONMENT_NAME}-project \
-      #         --stack-name "${ENVIRONMENT_NAME}-eks-network" \
-      #         --region ${AWS_DEFAULT_REGION} \
-      #         --parameter-overrides file://infra/infrastructure/network-parameters.json
-      # - run:
-      #     name: Ensure EKS Cluster exists
-      #     command: |
-      #       aws cloudformation deploy \
-      #         --template-file infra/infrastructure/cluster.yml \
-      #         --tags project=${ENVIRONMENT_NAME}-project \
-      #         --stack-name "${ENVIRONMENT_NAME}-eks-cluster" \
-      #         --region ${AWS_DEFAULT_REGION} \
-      #         --parameter-overrides file://infra/infrastructure/cluster-parameters.json \
-      #         --capabilities CAPABILITY_NAMED_IAM
-      #     no_output_timeout: 15m
-      # - run:
-      #     name: Ensure Nodegroup exists
-      #     command: |
-      #       aws cloudformation deploy \
-      #         --template-file infra/infrastructure/nodegroup.yml \
-      #         --tags project=${ENVIRONMENT_NAME}-project \
-      #         --stack-name "${ENVIRONMENT_NAME}-eks-nodegroup" \
-      #         --region ${AWS_DEFAULT_REGION} \
-      #         --parameter-overrides file://infra/infrastructure/nodegroup-parameters.json \
-      #         --capabilities CAPABILITY_NAMED_IAM
       - run:
-          name: Ensure management instances exists
+          name: Create EKS network
+          command: |
+            aws cloudformation deploy \
+              --template-file infra/infrastructure/network.yml \
+              --tags project=${ENVIRONMENT_NAME}-project \
+              --stack-name "${ENVIRONMENT_NAME}-eks-network" \
+              --region ${AWS_DEFAULT_REGION} \
+              --parameter-overrides file://infra/infrastructure/network-parameters.json
+      - run:
+          name: Create EKS Cluster
+          command: |
+            aws cloudformation deploy \
+              --template-file infra/infrastructure/cluster.yml \
+              --tags project=${ENVIRONMENT_NAME}-project \
+              --stack-name "${ENVIRONMENT_NAME}-eks-cluster" \
+              --region ${AWS_DEFAULT_REGION} \
+              --parameter-overrides file://infra/infrastructure/cluster-parameters.json \
+              --capabilities CAPABILITY_NAMED_IAM
+          no_output_timeout: 15m
+      - run:
+          name: Create Node EKS
+          command: |
+            aws cloudformation deploy \
+              --template-file infra/infrastructure/nodegroup.yml \
+              --tags project=${ENVIRONMENT_NAME}-project \
+              --stack-name "${ENVIRONMENT_NAME}-eks-node" \
+              --region ${AWS_DEFAULT_REGION} \
+              --parameter-overrides file://infra/infrastructure/nodegroup-parameters.json \
+              --capabilities CAPABILITY_NAMED_IAM
+      - run:
+          name: Create management VM to cluster
           command: |
             aws cloudformation deploy \
               --template-file infrastructure/management.yml \
               --tags project=${ENVIRONMENT_NAME}-project \
-              --stack-name "${ENVIRONMENT_NAME}-eks-management" \
+              --stack-name "${ENVIRONMENT_NAME}-eks-man" \
               --region ${AWS_DEFAULT_REGION} \
               --parameter-overrides file://infrastructure/management-parameters.json \
               --output text >> ~/checkIfDeployed.txt
             cat ~/checkIfDeployed.txt
       - run:
-          name: Extract the IPs of the management instances for Ansible
+          name: Get IPs of the management instances for Ansible
           command: |
             echo [management] > ~/inventory.txt
             aws ec2 describe-instances \
@@ -126,14 +125,14 @@ jobs:
             - inventory.txt
             - checkIfDeployed.txt
 
-  configure-infrastructure:
+  conf-infra:
     docker:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints:
-            - "df:24:75:ba:ec:b5:a9:a4:40:45:5a:f8:5c:d3:48:e8"
+          fingerprints: ["df:24:75:ba:ec:b5:a9:a4:40:45:5a:f8:5c:d3:48:e8"]
+      # attach workspace          
       - attach_workspace:
           at: ~/
       - run:
@@ -152,14 +151,14 @@ jobs:
                 cd ansible
                 ansible-playbook -i ~/inventory.txt configure-server.yml
               fi
-  configure-cluster:
+  conf-cluster:
     docker:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints:
-            - "df:24:75:ba:ec:b5:a9:a4:40:45:5a:f8:5c:d3:48:e8"
+          fingerprints: ["df:24:75:ba:ec:b5:a9:a4:40:45:5a:f8:5c:d3:48:e8"]
+      # attach workspace          
       - attach_workspace:
           at: ~/
       - run:
@@ -179,7 +178,7 @@ jobs:
                 ansible-playbook -i ~/inventory.txt configure-cluster.yml
               fi
       - run:
-          name: Wait for LoadBalancer's domain to become reachable
+          name: Acess LB's domain to become reachable, to wait
           command: |
             if grep -q "No changes to deploy" ~/checkIfDeployed.txt
               then
@@ -191,7 +190,7 @@ jobs:
                 sleep 60
               fi
       - run:
-          name: Display the LoadBalancer's DNS name
+          name: Display the LB's DNS name
           command: |
             cat ~/inventory.txt
             cd ansible
@@ -208,8 +207,8 @@ jobs:
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints:
-            - "df:24:75:ba:ec:b5:a9:a4:40:45:5a:f8:5c:d3:48:e8"
+          fingerprints: ["df:24:75:ba:ec:b5:a9:a4:40:45:5a:f8:5c:d3:48:e8"]
+      # attach workspace          
       - attach_workspace:
           at: ~/
       - run:
@@ -217,7 +216,7 @@ jobs:
           command: |
             apk add --update ansible
       - run:
-          name: Deploy newest Docker Image
+          name: Deploy Docker Image
           command: |
             cat ~/inventory.txt
             cd ansible
@@ -233,17 +232,14 @@ workflows:
           requires: [build-backend]
       - docker-tag-push:
           requires: [test-backend]
-      - deploy-infrastructure:
+      - deploy-infras:
+          requires: [docker-tag-push]
           filters:
             branches:
               only: [ main ]
-      - configure-infrastructure:
-          requires:
-            - deploy-infrastructure
-      - configure-cluster:
-          requires:
-            - configure-infrastructure
-            - docker-tag-push
+      - conf-infra:
+          requires: [deploy-infras]
+      - conf-cluster:
+          requires: [conf-infra, docker-tag-push]
       - deploy-docker:
-          requires:
-            - configure-cluster                                         
+          requires: [conf-cluster ]                                       
