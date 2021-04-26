@@ -57,11 +57,15 @@ Step 5: Test your pipeline
 - Take a screenshot of the Circle CI or Jenkins pipeline showing deployment, and a screenshot of your AWS EC2 page showing the newly created (for blue/green) or modified (for rolling) instances. Make sure you name your instances differently between blue and green deployments.
 
 #### Stacks AWS:
-
+![screenshots](./screenshots/stack_cloudformation.png)
 
 #### Instances cluster, node and worker:
 
+![screenshots](./screenshots/work_node.png)
+
 #### Workflow CircleCI - CI/CD Pipelines:
+
+![screenshots](./screenshots/workflow_ci_cd.png)
 
 #### Force error lint and handolint:
 
@@ -71,7 +75,15 @@ Step 5: Test your pipeline
 
 ![screenshots](./screenshots/passed_lint.png)
 
-#### CI/CD - passes:
-
 #### Application
+
+![screenshots](./screenshots/get_cluster_eks_service.png)
+
+[Link home Page](http://ad6b9438cdf0f43619539f0c01f691a7-994001410.us-west-2.elb.amazonaws.com)
+
+![screenshots](./screenshots/app_home.png)
+
+[Link API](http://ad6b9438cdf0f43619539f0c01f691a7-994001410.us-west-2.elb.amazonaws.com/api)
+
+![screenshots](./screenshots/app_api.png)
 
