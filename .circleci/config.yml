@@ -72,31 +72,31 @@ jobs:
           name: Create EKS network
           command: |
             aws cloudformation deploy \
-              --template-file infra/infrastructure/network.yml \
+              --template-file infrastructure/network.yml \
               --tags project=${ENVIRONMENT_NAME}-project \
               --stack-name "${ENVIRONMENT_NAME}-eks-network" \
               --region ${AWS_DEFAULT_REGION} \
-              --parameter-overrides file://infra/infrastructure/network-parameters.json
+              --parameter-overrides file://infrastructure/network-parameters.json
       - run:
           name: Create EKS Cluster
           command: |
             aws cloudformation deploy \
-              --template-file infra/infrastructure/cluster.yml \
+              --template-file infrastructure/cluster.yml \
               --tags project=${ENVIRONMENT_NAME}-project \
               --stack-name "${ENVIRONMENT_NAME}-eks-cluster" \
               --region ${AWS_DEFAULT_REGION} \
-              --parameter-overrides file://infra/infrastructure/cluster-parameters.json \
+              --parameter-overrides file://infrastructure/cluster-parameters.json \
               --capabilities CAPABILITY_NAMED_IAM
           no_output_timeout: 15m
       - run:
           name: Create Node EKS
           command: |
             aws cloudformation deploy \
-              --template-file infra/infrastructure/nodegroup.yml \
+              --template-file infrastructure/nodegroup.yml \
               --tags project=${ENVIRONMENT_NAME}-project \
               --stack-name "${ENVIRONMENT_NAME}-eks-node" \
               --region ${AWS_DEFAULT_REGION} \
-              --parameter-overrides file://infra/infrastructure/nodegroup-parameters.json \
+              --parameter-overrides file://infrastructure/nodegroup-parameters.json \
               --capabilities CAPABILITY_NAMED_IAM
       - run:
           name: Create management VM to cluster

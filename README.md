@@ -67,6 +67,10 @@ Step 5: Test your pipeline
 
 ![screenshots](./screenshots/error_lint.png)
 
+#### Passed test lint and handolint:
+
+![screenshots](./screenshots/passed_lint.png)
+
 #### CI/CD - passes:
 
 #### Application
